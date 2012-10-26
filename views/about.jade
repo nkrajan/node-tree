@@ -8,10 +8,12 @@ block content
 
 	script(type='text/javascript)
 		var socket = io.connect('http://node-tree.local');
-		socket.on('broadcast', function (data) {
+		socket.on('sharecreated', function (share) {
 			console.log("broadcast event received")
-			console.log(data);
-			document.getElementById('eventdata').innerHTML = data['message']
+			console.log(share);
+			// TODO: create a client-side Share object? Can we send a full object?
+			console.log(share._node._data.data.awesm_url);
+			document.getElementById('eventdata').innerHTML = share._node._data.data.awesm_url;
 		});
 
 	div#eventdata

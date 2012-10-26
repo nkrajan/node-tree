@@ -3,7 +3,6 @@ extends layout
 block content
 	h1= title
 	p Welcome to #{title}
-	p This is my node app...
 
 	script(src='/socket.io/socket.io.js')
 
@@ -13,8 +12,29 @@ block content
 			console.log(data);
 			socket.emit('my other event', { my: 'data' });
 		});
+		var getFormData = function(formName) {
+			var form = document.getElementById(formName);
+			var inputs = form.getElementsByTagName('input');
+			var data = {};
+			for(var i = 0; i < inputs.length; i++) {
+				var el = inputs[i];
+				if (el.id) data[el.id] = el.value;
+			}
+			console.log(data);
+			return data;
+		}
 
-	input#message(type='text')
+	h2 Create a fake share
+	form#createshare
+		p awesm_url:
+			input#awesm_url(type='text')
+		p parent_awesm:
+			input#parent_awesm(type='text')
+		p Destination:
+			input#destination(type='text')
+	button(onclick="socket.emit('createshare', getFormData('createshare') ); return false;")
+		|Create share
 
-	button(onclick="socket.emit('chatmessage',{ message: document.getElementById('message').value })")
-		|Send an event
+	h2 Find shares
+	p
+		a(href='/shares') See existing shares
