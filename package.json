@@ -1,0 +1,16 @@
+{
+  "name": "awesm-node-tree",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "express": "3.0.0",
+    "jade": "~0.27.6",
+    "style": "~0.0.3"
+  },
+  "scripts": { 
+    "start": "node app.js"
+  }  
+}
