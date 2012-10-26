@@ -1,0 +1,18 @@
+extends layout
+
+block content
+	h1= title
+	p This is another page.
+
+	script(src='/socket.io/socket.io.js')
+
+	script(type='text/javascript)
+		var socket = io.connect('http://node-tree.local');
+		socket.on('broadcast', function (data) {
+			console.log("broadcast event received")
+			console.log(data);
+			document.getElementById('eventdata').innerHTML = data['message']
+		});
+
+	div#eventdata
+		|This is where an event will go.

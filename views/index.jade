@@ -13,3 +13,8 @@ block content
 			console.log(data);
 			socket.emit('my other event', { my: 'data' });
 		});
+
+	input#message(type='text')
+
+	button(onclick="socket.emit('chatmessage',{ message: document.getElementById('message').value })")
+		|Send an event
