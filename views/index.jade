@@ -1,15 +1,15 @@
 extends layout
 
-script(src='/socket.io/socket.io.js')
-
-script(type='text/javascript)
-  var socket = io.connect('http://node-tree.local');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-  });
-
 block content
-  h1= title
-  p Welcome to #{title}
-  p This is my node app.
+	h1= title
+	p Welcome to #{title}
+	p This is my node app...
+
+	script(src='/socket.io/socket.io.js')
+
+	script(type='text/javascript)
+		var socket = io.connect('http://node-tree.local');
+		socket.on('news', function (data) {
+			console.log(data);
+			socket.emit('my other event', { my: 'data' });
+		});
