@@ -2,14 +2,14 @@ var nodeMap = {};
 var force,svg,color;
 
 var initialize = function() {
-	var width = 800,
-	height = 300;
+	var width = 900,
+	height = 400;
 
 	color = d3.scale.category20();
 
 	force = d3.layout.force()
-	.charge(-50)
-	.linkDistance(20)
+	.charge(-1000)
+	.linkDistance(40)
 	.size([width, height]);
 
 	svg = d3.select("#chart").append("svg")
@@ -27,6 +27,8 @@ var initialize = function() {
 
 function addNode(data) {	
 	console.log("adding node")
+	
+	// these are the internal representations of the nodes and links
 	var nodes = force.nodes();
 	var links = force.links();
 	
@@ -36,7 +38,7 @@ function addNode(data) {
 	var i = nodes.length;
 	console.log("Adding node at index " + i);
 	
-	// create the node
+	// create a new node
 	var n = { 
 		'awesm_url': data['awesm_url'],
 		'group': 1
@@ -52,10 +54,6 @@ function addNode(data) {
 		console.log("parent is " + parent);
 		var sourceNode = nodes[nodeMap[data['awesm_url']]];
 		var parentNode = nodes[nodeMap[data['parent_awesm']]];
-		//console.log("Source is ")
-		//console.log(sourceNode)
-		//console.log("parent is ")
-		//console.log(parentNode)
 		var l = {
 			source: sourceNode,
 			target: parentNode,
@@ -64,35 +62,48 @@ function addNode(data) {
 		links.push(l)
 	}
 	
+	// this gets the svg representation of the nodes
+	// I don't know what data() is for
 	var node = svg.selectAll("circle.node")
 	.data(nodes);
 	
+	// this appends a new node to the svg set
+	// I don't know what enter() is for
 	var nodeEnter = node.enter().append("circle")
 	.attr("class", "node")
-	.attr("r", 5)
+	.attr("r", 20)
 	.style("fill", function(d) {
 		return color(d.group);
 	})
 	.call(force.drag);
 	
+	// add a text label to the node
 	nodeEnter.append("text")
 	.text(function(d) {
 		return d.awesm_url;
 	});
 	
+	// I don't know what this does
 	node.exit().remove();
 	
+	// get the svg representation of the links
+	// still don't know what data() is doing here
 	var link = svg.selectAll("line.link")
 	.data(links);
 	
+	// append a new link to the svg.
+	// still don't know what enter() is for
 	var linkEnter = link.enter().append("line")
 	.attr("class", "link")
 	.style("stroke-width", function(d) {
 		return Math.sqrt(d.value);
 	});
 	
+	// still don't know what this does'
 	link.exit().remove;
 	
+	// on each tick of the model, update the svg attributes
+	// to match the internal representations
 	force.on("tick", function() {
 		link.attr("x1", function(d) {
 			return d.source.x;
@@ -112,68 +123,12 @@ function addNode(data) {
 		})
 		.attr("cy", function(d) {
 			return d.y;
-		})
-		.attr("mything", function(d) {
-			return d.awesm_url;
 		});
 	});
 	
+	// kick it all off
 	force.nodes(nodes)
 		.links(links)
 		.start();	
 	
 }
-
-/*
-d3.json("miserables.json", function(json) {
-	force
-	.nodes(json.nodes)
-	.links(json.links)
-	.start();
- 
-	var link = svg.selectAll("line.link")
-	.data(json.links)
-	.enter().append("line")
-	.attr("class", "link")
-	.style("stroke-width", function(d) {
-		return Math.sqrt(d.value);
-	});
- 
-	var node = svg.selectAll("circle.node")
-	.data(json.nodes)
-	.enter().append("circle")
-	.attr("class", "node")
-	.attr("r", 5)
-	.style("fill", function(d) {
-		return color(d.group);
-	})
-	.call(force.drag);
- 
-	node.append("title")
-	.text(function(d) {
-		return d.name;
-	});
- 
-	force.on("tick", function() {
-		link.attr("x1", function(d) {
-			return d.source.x;
-		})
-		.attr("y1", function(d) {
-			return d.source.y;
-		})
-		.attr("x2", function(d) {
-			return d.target.x;
-		})
-		.attr("y2", function(d) {
-			return d.target.y;
-		});
- 
-		node.attr("cx", function(d) {
-			return d.x;
-		})
-		.attr("cy", function(d) {
-			return d.y;
-		});
-	});
-});
-*/

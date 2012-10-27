@@ -1,17 +1,11 @@
 body {
-  padding: 50px;
+  padding: 20px 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
   color: #00B7FF;
 }
-/*
-#chart {
-	width: 500px;
-	height: 300px;
-}
-*/
 circle.node {
   stroke: #fff;
   stroke-width: 1.5px;
