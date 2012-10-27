@@ -1,0 +1,30 @@
+extends layout
+
+block content
+	h1= title
+	p This is where the magic happens. Maybe.
+	form#findshares(method='GET')
+		p Find the tree for
+			input#awesm_url(name='awesm_url',value=awesm_url)
+		p
+			input(type='submit',value='Find shares')
+
+	if(awesm_url)
+		h2= awesm_url
+
+	script(src='/socket.io/socket.io.js')
+
+	script(type='text/javascript)
+		var socket = io.connect('http://node-tree.local');
+		socket.on('sharefound', function (share) {
+			console.log("broadcast event received")
+			console.log(share);
+			// TODO: create a client-side Share object? Can we send a full object?
+			var node = share._node;
+			var data = share._node._data.data;
+			console.log(node);
+			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ':' + data.id;
+		});
+
+	div#eventdata
+		|This is where an event will go.
