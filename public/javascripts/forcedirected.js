@@ -8,21 +8,16 @@ var initialize = function() {
 	color = d3.scale.category20();
 
 	force = d3.layout.force()
-	.charge(-1000)
+	.charge(-500)
+	.gravity(0.05)
 	.linkDistance(40)
 	.size([width, height]);
 
 	svg = d3.select("#chart").append("svg")
 	.attr("width", width)
 	.attr("height", height);
-	
-	/*
-	addNode({'awesm_url': 'bob'});
-	addNode({'awesm_url': 'john', 'parent_awesm': 'bob'});
-	addNode({'awesm_url': 'mary'});
-	addNode({'awesm_url': 'alice'});
-	*/
-   addNode({'awesm_url': rootNode});
+
+	addNode({'awesm_url': rootNode});
 }
 
 function addNode(data) {	
@@ -71,20 +66,23 @@ function addNode(data) {
 	// I don't know what enter() is for
 	var nodeEnter = node.enter().append("circle")
 	.attr("class", "node")
-	.attr("r", 20)
+	.call(force.drag);
+	
+	// set node appearance
+	nodeEnter.attr("r", 20)
 	.style("fill", function(d) {
 		return color(d.group);
 	})
-	.call(force.drag);
-	
+
 	// add a text label to the node
+	// wrong: this is actually inserting the text into the circle, not what we want
 	nodeEnter.append("text")
-	.text(function(d) {
+		.attr("class","nodetext")
+		.attr("dx",12)
+		.attr("dy",".35em")
+		.text(function(d) {
 		return d.awesm_url;
 	});
-	
-	// I don't know what this does
-	node.exit().remove();
 	
 	// get the svg representation of the links
 	// still don't know what data() is doing here
@@ -99,7 +97,7 @@ function addNode(data) {
 		return Math.sqrt(d.value);
 	});
 	
-	// still don't know what this does'
+	// still don't know what this does
 	link.exit().remove;
 	
 	// on each tick of the model, update the svg attributes
@@ -128,7 +126,7 @@ function addNode(data) {
 	
 	// kick it all off
 	force.nodes(nodes)
-		.links(links)
-		.start();	
+	.links(links)
+	.start();	
 	
 }
