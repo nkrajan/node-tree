@@ -57,19 +57,34 @@ function addNode(data) {
 		links.push(l)
 	}
 	
+	// we do the links first so the nodes are drawn on top
+	// get the svg representation of the links
+	// data() appears to be an 'outer join' between new and existing nodes
+	var link = svg.selectAll("line.link")
+	.data(links);
+	
+	// append a new link to the svg.
+	// I don't know what enter() is for
+	var linkEnter = link.enter().append("line")
+	.attr("class", "link")
+	.style("stroke-width", function(d) {
+		return Math.sqrt(d.value);
+	});
+	
 	// this gets the svg representation of the nodes
-	// I don't know what data() is for
-	var node = svg.selectAll("circle.node")
+	// data() appears to be an 'outer join' between new and existing nodes
+	var node = svg.selectAll("g.node")
 	.data(nodes);
 	
 	// this appends a new node to the svg set
-	// I don't know what enter() is for
-	var nodeEnter = node.enter().append("circle")
+	// still don't know what enter() is for
+	var nodeEnter = node.enter().append("g")
 	.attr("class", "node")
 	.call(force.drag);
 	
-	// set node appearance
-	nodeEnter.attr("r", 20)
+	// add a circle to the group
+	nodeEnter.append("circle")
+	.attr("r", 20)
 	.style("fill", function(d) {
 		return color(d.group);
 	})
@@ -83,22 +98,6 @@ function addNode(data) {
 		.text(function(d) {
 		return d.awesm_url;
 	});
-	
-	// get the svg representation of the links
-	// still don't know what data() is doing here
-	var link = svg.selectAll("line.link")
-	.data(links);
-	
-	// append a new link to the svg.
-	// still don't know what enter() is for
-	var linkEnter = link.enter().append("line")
-	.attr("class", "link")
-	.style("stroke-width", function(d) {
-		return Math.sqrt(d.value);
-	});
-	
-	// still don't know what this does
-	link.exit().remove;
 	
 	// on each tick of the model, update the svg attributes
 	// to match the internal representations
@@ -116,11 +115,8 @@ function addNode(data) {
 			return d.target.y;
 		});
 
-		node.attr("cx", function(d) {
-			return d.x;
-		})
-		.attr("cy", function(d) {
-			return d.y;
+		node.attr("transform", function(d) { 
+			return "translate(" + d.x + "," + d.y + ")"; 
 		});
 	});
 	
