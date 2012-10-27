@@ -16,6 +16,9 @@ block content
 
 	script(type='text/javascript)
 		var socket = io.connect('http://node-tree.local');
+		socket.on('connect',function() {
+			socket.emit('findallshares',{root:'#{awesm_url}'});
+		});
 		socket.on('sharefound', function (share) {
 			console.log("broadcast event received")
 			console.log(share);
@@ -23,7 +26,7 @@ block content
 			var node = share._node;
 			var data = share._node._data.data;
 			console.log(node);
-			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ':' + data.id;
+			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;
 		});
 
 	div#eventdata

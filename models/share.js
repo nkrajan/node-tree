@@ -107,6 +107,7 @@ Share.getChildShares = function(share,callback) {
 			var childShares = [];
 			for(var i = 0; i < childNodes.length; i++) {
 				childShares[i] = new Share(childNodes[i]);
+				childShares[i]._id = childShares[i].id
 			}
 			callback(err,childShares);
 		}

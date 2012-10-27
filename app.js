@@ -54,4 +54,36 @@ io.sockets.on('connection', function (socket) {
 			}
 		});		
 	});
+	socket.on('findallshares',function(data) {
+		var awesmUrl = data['root'];
+		if (awesmUrl) {
+			Share.findByAwesmUrl(awesmUrl, function(err,share) {
+				if (err) {
+					console.log("Root event failed for share " + awesmUrl);
+				} else {
+					findAllChildren(socket,share);
+				}
+			});
+		}
+	});
 });
+
+// FIXME
+var findAllChildren = function(socket,share) {
+	console.log("Finding all children of " + share.awesm_url);
+	Share.getChildShares(share, function(err,childShares) {
+		if (err) {
+			console.log("Get child shares had error")
+			console.log(err);
+		} else {
+			console.log("Found " + childShares.length + " child shares")
+			for(var i = 0; i < childShares.length; i++) {
+				console.log(childShares[i].awesm_url);
+				console.log(childShares[i].id);
+				socket.emit('sharefound',childShares[i]);
+				// RECURSE! You know the dangers.
+				findAllChildren(socket,childShares[i]);
+			}												
+		}
+	});	
+}
