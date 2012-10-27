@@ -13,21 +13,27 @@ block content
 		h2= awesm_url
 
 	script(src='/socket.io/socket.io.js')
+	script(src='/javascripts/d3.v2.min.js')
+	script(src='/javascripts/forcedirected.js')
+
+	div#chart
 
 	script(type='text/javascript)
 		var socket = io.connect('http://node-tree.local');
+		var rootNode = '#{awesm_url}';
 		socket.on('connect',function() {
 			socket.emit('findallshares',{root:'#{awesm_url}'});
 		});
 		socket.on('sharefound', function (share) {
-			console.log("broadcast event received")
-			console.log(share);
+			//console.log("broadcast event received")
+			//console.log(share);
 			// TODO: create a client-side Share object? Can we send a full object?
 			var node = share._node;
 			var data = share._node._data.data;
-			console.log(node);
 			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;
+			addNode(data);
 		});
+		document.addEventListener("DOMContentLoaded", initialize, false)
 
 	div#eventdata
-		|This is where an event will go.
+		|These are the children we found:

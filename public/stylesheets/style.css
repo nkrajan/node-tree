@@ -6,3 +6,24 @@ body {
 a {
   color: #00B7FF;
 }
+/*
+#chart {
+	width: 500px;
+	height: 300px;
+}
+*/
+circle.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+line.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+text {
+	display: block;
+	width: 10px;
+	height: 10px;
+	border: 1px solid red;
+}
