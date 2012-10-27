@@ -24,11 +24,13 @@ block content
 		socket.on('connect',function() {
 			socket.emit('findallshares',{root:'#{awesm_url}'});
 		});
-		socket.on('sharefound', function (share) {
-			//console.log("broadcast event received")
-			//console.log(share);
-			// TODO: create a client-side Share object? Can we send a full object?
-			var node = share._node;
+		socket.on('sharefound', function(share) {
+			var data = share._node._data.data;
+			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;
+			addNode(data);
+		});
+		socket.on('sharecreated', function(share) {
+			console.log("new share arrived!");
 			var data = share._node._data.data;
 			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;
 			addNode(data);

@@ -10,7 +10,7 @@ var initialize = function() {
 	force = d3.layout.force()
 	.charge(-500)
 	.gravity(0.05)
-	.linkDistance(40)
+	.linkDistance(60)
 	.size([width, height]);
 
 	svg = d3.select("#chart").append("svg")
