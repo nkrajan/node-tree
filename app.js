@@ -2,11 +2,16 @@
  * Module dependencies.
  */
 
+var EXCHANGE_NAME = 'node-tree-demo-exchange'
+var AMQP_HOST = "amqp://localhost"
+
 var express = require('express')
-	, routes = require('./routes')
-	, share = require('./routes/share')
-	, http = require('http')
-	, path = require('path');
+, routes = require('./routes')
+, share = require('./routes/share')
+, http = require('http')
+, path = require('path')
+, amqp = require('amqp');
+//	, Promise = require('promise');
 
 var app = express();
 
@@ -34,6 +39,9 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 	console.log("Express server listening on port " + app.get('port'));
 });
 
+//var io_promise = new Promise();
+
+// handle websocket connections to the browser clients
 io = require('socket.io').listen(server);
 var Share = require('./models/share');
 
@@ -68,7 +76,61 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-// FIXME
+/** 
+ * create/bind to exchange
+ * create a queue, attach listeners to queue
+ * bind queue to exchange
+ */
+var setupRabbit = function() {
+	var exchange = conn.exchange(EXCHANGE_NAME, {
+		'type': 'fanout', 
+		durable: false
+	}, function() {
+		// create queue
+		var queue = conn.queue('', {
+			durable: false, 
+			exclusive: true
+		},
+		function() {
+			// when queue is created, setup listeners
+			queue.subscribe(function(msg) {
+				console.log("Read a message from the queue");
+				var data = msg.body;
+				console.log(data.domain + "_" + data.stub);
+				// create a share
+				Share.create(
+					{
+						'awesm_url': data.redirection_id,
+						'parent_awesm': data.parent_id,
+						'destination': data.original_url_id
+					},
+					function(err,share) {
+						// find any connected socket, emit global event on it
+						io.sockets.emit('sharecreated',share);
+					}
+				);
+			});
+			// now bind the queue to our exchange
+			queue.bind(exchange.name, '');
+		});
+		queue.on('queueBindOk', function() {
+			console.log("Successfully bound to queue")
+		});
+	});
+}
+
+// connect to rabbit and trigger connection setup
+var conn = amqp.createConnection({
+	url: AMQP_HOST
+});
+conn.on('ready', setupRabbit);
+
+/**
+ * Finds all the children of a given share
+ * Emits them to the socket
+ * Recurses to all children (simultaneously!)
+ * TODO: put this somewhere more sensible, like the Share model maybe?
+ */
 var findAllChildren = function(socket,share) {
 	console.log("Finding all children of " + share.awesm_url);
 	Share.getChildShares(share, function(err,childShares) {

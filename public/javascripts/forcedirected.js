@@ -22,6 +22,8 @@ var initialize = function() {
 
 function addNode(data) {	
 	console.log("adding node")
+	var awesm_url = data['awesm_url'];
+	
 	
 	// these are the internal representations of the nodes and links
 	var nodes = force.nodes();
@@ -30,14 +32,28 @@ function addNode(data) {
 	console.log("all nodes:")
 	console.log(nodes);
 
+	// have we seen this before?
+	if (nodeMap[awesm_url]) {
+		// node already exists. Increment click count.
+		var n = nodeMap[awesm_url];
+		n.clicks++;
+		
+		// TODO: increment clicks in visualization too
+		
+		// and that's it. Bail.
+		return;
+	}
+
+	// this is a new node
+	var n = { 
+		'awesm_url': awesm_url,
+		'group': 1,
+		'clicks': 1
+	};
+	
+	// find out where to insert it
 	var i = nodes.length;
 	console.log("Adding node at index " + i);
-	
-	// create a new node
-	var n = { 
-		'awesm_url': data['awesm_url'],
-		'group': 1
-	};
 	nodes[i] = n;
 	
 	// map to the node by awesm_url

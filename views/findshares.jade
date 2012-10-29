@@ -35,6 +35,9 @@ block content
 			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;
 			addNode(data);
 		});
+		socket.on('queueevent', function(message) {
+			console.log("Queue event: " + message.toString() );
+		});
 		document.addEventListener("DOMContentLoaded", initialize, false)
 
 	div#eventdata
