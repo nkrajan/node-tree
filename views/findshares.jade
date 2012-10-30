@@ -1,16 +1,15 @@
 extends layout
 
 block content
-	h1= title
-	p This is where the magic happens. Maybe.
+	h1 Find the tree for a share!
 	form#findshares(method='GET')
 		p Find the tree for
-			input#awesm_url(name='awesm_url',value=awesm_url)
+			input#awesm_url(name='awesm_url',value=root_awesm)
 		p
 			input(type='submit',value='Find shares')
 
-	if(awesm_url)
-		h2= awesm_url
+	if(root_awesm)
+		h2= root_awesm
 
 	script(src='/socket.io/socket.io.js')
 	script(src='/javascripts/d3.v2.min.js')
@@ -20,10 +19,13 @@ block content
 
 	script(type='text/javascript)
 		var socket = io.connect('http://node-tree.local');
-		var rootNode = '#{awesm_url}';
-		socket.on('connect',function() {
-			socket.emit('findallshares',{root:'#{awesm_url}'});
-		});
+		var rootAwesm = '#{root_awesm}';
+		var rootId = '#{root_id}';
+		if (rootAwesm) {
+			socket.on('connect',function() {
+				socket.emit('findallshares',{root:'#{root_awesm}'});
+			});
+		}
 		socket.on('sharefound', function(share) {
 			var data = share._node._data.data;
 			document.getElementById('eventdata').innerHTML += '<li>' + data.awesm_url + ': child of ' + data.parent_awesm;

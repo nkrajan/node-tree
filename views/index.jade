@@ -28,8 +28,10 @@ block content
 	form#createshare
 		p awesm_url:
 			input#awesm_url(type='text')
-		p parent_awesm:
-			input#parent_awesm(type='text')
+		p redirection_id:
+			input#redirection_id(type='text')
+		p parent_id:
+			input#parent_id(type='text')
 		p Destination:
 			input#destination(type='text')
 	button(onclick="socket.emit('createshare', getFormData('createshare') ); return false;")

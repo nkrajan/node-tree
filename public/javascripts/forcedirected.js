@@ -17,36 +17,56 @@ var initialize = function() {
 	.attr("width", width)
 	.attr("height", height);
 
-	addNode({'awesm_url': rootNode});
+	if (rootAwesm) {
+		addNode({
+			'awesm_url': rootAwesm,
+			'redirection_id': rootId
+		},true);		
+	}
 }
 
-function addNode(data) {	
+function addNode(data,isRoot) {	
 	console.log("adding node")
 	var awesm_url = data['awesm_url'];
-	
+	var redirection_id = data['redirection_id'];
+	var parent_id = data['parent_id'];
 	
 	// these are the internal representations of the nodes and links
 	var nodes = force.nodes();
 	var links = force.links();
 	
-	console.log("all nodes:")
-	console.log(nodes);
-
+	//console.log("Node map:")
+	//console.log(nodes);
+	
 	// have we seen this before?
-	if (nodeMap[awesm_url]) {
+	if (nodeMap[redirection_id]) {
 		// node already exists. Increment click count.
-		var n = nodeMap[awesm_url];
-		n.clicks++;
+		var n = nodeMap[redirection_id];
+		nodes[n].clicks = nodes[n].clicks + 1;
 		
 		// TODO: increment clicks in visualization too
-		
-		// and that's it. Bail.
 		return;
+	}
+
+	// non-root nodes have extra checks
+	if (!isRoot) {
+		if (!parent_id) {
+			console.log(awesm_url + " has no parent");
+			return;
+		}
+
+		// is its parent part of the graph?
+		if (typeof(nodeMap[parent_id]) == 'undefined') {
+			console.log(awesm_url + " does not have a parent in the graph");
+			return;
+		}
 	}
 
 	// this is a new node
 	var n = { 
 		'awesm_url': awesm_url,
+		'redirection_id': redirection_id,
+		'parent_id': parent_id,
 		'group': 1,
 		'clicks': 1
 	};
@@ -57,14 +77,16 @@ function addNode(data) {
 	nodes[i] = n;
 	
 	// map to the node by awesm_url
-	nodeMap[n['awesm_url']] = i;
+	nodeMap[n['redirection_id']] = i;
+	console.log("nodemap now")
+	console.log(nodeMap)
 	
 	// create a link, if possible
-	var parent = data['parent_awesm'];
+	var parent = data['parent_id'];
 	if (parent) {
-		console.log("parent is " + parent);
-		var sourceNode = nodes[nodeMap[data['awesm_url']]];
-		var parentNode = nodes[nodeMap[data['parent_awesm']]];
+		console.log("parent ID is " + parent);
+		var sourceNode = nodes[nodeMap[data['redirection_id']]];
+		var parentNode = nodes[nodeMap[data['parent_id']]];
 		var l = {
 			source: sourceNode,
 			target: parentNode,

@@ -12,6 +12,8 @@ var Share = module.exports = function Share(_node) {
 // setup constants for an index
 var INDEX_NAME = 'shares';
 var INDEX_KEY = 'awesm_url';
+var REDIRECTION_INDEX_NAME = 'redirections';
+var REDIRECTION_INDEX_KEY = 'redirection_id';
 
 // totes just copied this from node-neo4j-tempalte
 function proxyProperty(prop, isData) {
@@ -37,14 +39,39 @@ function proxyProperty(prop, isData) {
 proxyProperty('id');
 proxyProperty('exists');
 proxyProperty('awesm_url', true);
+proxyProperty('redirection_id', true);
+proxyProperty('parent_id', true);
 proxyProperty('parent_awesm', true);
 proxyProperty('destination', true);
+
+Share.createIfNotExists = function(data, finalCallback, existsCallback) {
+	Share.findByAwesmUrl(data['awesm_url'], function(err,share) {
+		if (err) {
+			console.log("err was " + err);
+			if (err.indexOf("No awesmUrl called") === 0) {
+				console.log(data['awesm_url'] + " is new");
+				Share.create(data, finalCallback);
+			} else {
+				console.log("Finding for createIfNotExists failed");
+				finalCallback(err,share);
+			}
+			return;
+		}
+		if (share) {
+			console.log(data['awesm_url'] + " already exists");
+			console.log(share);
+			existsCallback(share)
+		}
+		// else what?
+	})
+}
 
 // creates the awe.sm URL and saves it to neo4j
 // callback adds a relationship if it can find a valid parent
 Share.create = function (data, finalCallback) {
     var node = db.createNode(data);
     var share = new Share(node);
+	
 	// callback to create the parent-child relationship
 	var addParent = function(childShare,parentShare) {
 		console.log("Creating relationship between " + childShare.awesm_url + " and " + parentShare.awesm_url)
@@ -57,13 +84,12 @@ Share.create = function (data, finalCallback) {
 	
 	// callback to find the parent
 	var findParent = function(childShare) {
-		console.log("Looking for awesm parent")
-		console.log(childShare.parent_awesm)
-		Share.findByAwesmUrl(share.parent_awesm,function(err,parentNode) {
+		console.log("Looking for awesm parent for awesm_url " + childShare.awesm_url + " ID " + childShare.redirection_id)
+		Share.findByRedirectionId(share.parent_id,function(err,parentNode) {
 			// find failed
 			if (err) return finalCallback(err,childShare);
 			// find worked
-			console.log("Found parent " + childShare.parent_awesm)
+			console.log("Found parent " + parentNode.awesm_url + " for child " + childShare.awesm_url);
 			addParent(childShare,parentNode);
 		});
 	}
@@ -73,18 +99,24 @@ Share.create = function (data, finalCallback) {
 		// index the awesm_url
 		console.log("saving node")
 		console.log(share.parent_awesm);
+		// index by awesm_url for human-usability
         node.index(INDEX_NAME, INDEX_KEY, data['awesm_url'], function (err) {
-            if (err) return finalCallback(err);
-			var parent = data['parent_awesm'];
-			if (parent) {
-				console.log("need to create parent-child relationship")
-				findParent(share);
-			} else {
-				console.log("parent-less node " + data['awesm_url'] + " created")
-				finalCallback(null,share);
+            if (err) {
+				console.log("Indexing by awesm_url failed");
 			}
+			// index by redirection_id for parent-child relationship management
+			node.index(REDIRECTION_INDEX_NAME, REDIRECTION_INDEX_KEY, data['redirection_id'], function (err) {
+				if (err) return finalCallback(err);
+				var parent = data['parent_id'];
+				if (parent) {
+					console.log("need to create parent-child relationship")
+					findParent(share);
+				} else {
+					console.log("parent-less node " + data['awesm_url'] + " created")
+					finalCallback(null,share);
+				}
+			});
         });
-		// TODO: could index by other things here if we wanted, I guess
     });
 };
 
@@ -93,6 +125,17 @@ Share.findByAwesmUrl = function(awesmUrl,callback) {
 	db.getIndexedNode(INDEX_NAME,INDEX_KEY,awesmUrl, function(err,node) {
 		// no results
 		if(err) return callback("No awesmUrl called '" + awesmUrl + "' found",null);
+		// one result
+		var foundShare = new Share(node);
+		callback(null,foundShare);
+	});
+}
+
+// finds a single share by redirection_id, which is indexed
+Share.findByRedirectionId = function(redirectionId,callback) {
+	db.getIndexedNode(REDIRECTION_INDEX_NAME,REDIRECTION_INDEX_KEY,redirectionId, function(err,node) {
+		// no results
+		if(err) return callback("No awesmUrl with ID '" + redirectionId + "' found",null);
 		// one result
 		var foundShare = new Share(node);
 		callback(null,foundShare);

@@ -98,14 +98,23 @@ var setupRabbit = function() {
 				var data = msg.body;
 				console.log(data.domain + "_" + data.stub);
 				// create a share
-				Share.create(
+				Share.createIfNotExists(
 					{
-						'awesm_url': data.redirection_id,
-						'parent_awesm': data.parent_id,
+						'awesm_url': data.domain + '_' + data.stub,
+						'redirection_id': data.redirection_id,
+						'parent_id': data.parent_id,
+						'parent_awesm': '',
 						'destination': data.original_url_id
 					},
 					function(err,share) {
-						// find any connected socket, emit global event on it
+						if (err) {
+							console.log("Create failed: " + err)
+						} else {
+							// find any connected socket, emit global event on it
+							io.sockets.emit('sharecreated',share);
+						}
+					},
+					function(share) { // it exists!
 						io.sockets.emit('sharecreated',share);
 					}
 				);
@@ -138,10 +147,8 @@ var findAllChildren = function(socket,share) {
 			console.log("Get child shares had error")
 			console.log(err);
 		} else {
-			console.log("Found " + childShares.length + " child shares")
+			console.log("Found " + childShares.length + " child shares of " + share.awesm_url)
 			for(var i = 0; i < childShares.length; i++) {
-				console.log(childShares[i].awesm_url);
-				console.log(childShares[i].id);
 				socket.emit('sharefound',childShares[i]);
 				// RECURSE! You know the dangers.
 				findAllChildren(socket,childShares[i]);
